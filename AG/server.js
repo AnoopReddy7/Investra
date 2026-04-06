@@ -9,6 +9,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.send('Investra backend is running');
+});
+
+const normalizeSymbol = (symbol) => {
+    if (!symbol) return symbol;
+    const trimmed = symbol.toUpperCase().trim();
+    if (/^[A-Z0-9]+$/.test(trimmed)) {
+        return `${trimmed}.NS`;
+    }
+    return trimmed;
+};
+
 /* =========================
    SINGLE STOCK
 ========================= */
@@ -17,12 +30,12 @@ app.get("/api/quote/:symbol", async (req, res) => {
 
     try {
 
-        const symbol = req.params.symbol;
+        const symbol = normalizeSymbol(req.params.symbol);
 
         const quote = await yahooFinance.quote(symbol);
 
         res.json({
-            symbol: symbol,
+            symbol,
             price: quote.regularMarketPrice,
             change: quote.regularMarketChange,
             percentChange: quote.regularMarketChangePercent
@@ -60,7 +73,8 @@ app.get("/api/stocks", async (req, res) => {
 
         const results = [];
 
-        for (const symbol of list) {
+        for (const rawSymbol of list) {
+            const symbol = normalizeSymbol(rawSymbol);
 
             try {
 
@@ -73,9 +87,9 @@ app.get("/api/stocks", async (req, res) => {
                     percentChange: quote.regularMarketChangePercent
                 });
 
-            } catch {
+            } catch (error) {
 
-                console.log(`Failed: ${symbol}`);
+                console.log(`Failed: ${symbol}`, error.message);
 
             }
 
