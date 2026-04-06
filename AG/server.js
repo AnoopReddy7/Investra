@@ -239,7 +239,7 @@ app.get("/api/news/pulse", async (req, res) => {
    SERVER
 ========================= */
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
 
